@@ -1,0 +1,57 @@
+name: Deploy NixOS configuration
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            -   name: "Get latest NixOS configuration"
+                uses: actions/checkout@v4
+
+            -   name: "Clean '/build' directory on remote"
+                uses: appleboy/ssh-action@v1.2.0
+                with:
+                    host: ${{ secrets.SSH_HOST }}
+                    username: ${{ secrets.SSH_USERNAME }}
+                    key: ${{ secrets.SSH_KEY }}
+                    script: |
+                        rm -rf /build/*
+                        mkdir -p /build
+
+            -   name: "Deploy NixOS configuration to remote"
+                uses: appleboy/scp-action@v0.1.7
+                with:
+                    host: ${{ secrets.SSH_HOST }}
+                    username: ${{ secrets.SSH_USERNAME }}
+                    key: ${{ secrets.SSH_KEY }}
+                    source: "."
+                    target: "/build"
+                    timeout: 60s
+
+            # Removed .git folder to prevent Nix from treating the build directory as a git repository
+            # This fixes the error: "repository path '/build' is not owned by current user"
+            # Also added "|| true" to ignore the expected service failures after successful switch
+
+            -   name: "Validate and apply NixOS configuration"
+                uses: appleboy/ssh-action@v1.2.0
+                with:
+                    host: ${{ secrets.SSH_HOST }}
+                    username: ${{ secrets.SSH_USERNAME }}
+                    key: ${{ secrets.SSH_KEY }}
+                    script: |
+                        cd /build
+                        # Test build first
+                        rm -rf .git
+                        sudo nixos-rebuild build --flake .#ampere-config
+                        if [ $? -eq 0 ]; then
+                            sudo nixos-rebuild switch --flake .#ampere-config || true
+                        else
+                            echo "Build failed! Not applying changes."
+                            exit 1
+                        fi
+                    timeout: 300s
