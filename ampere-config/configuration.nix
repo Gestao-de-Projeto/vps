@@ -4,6 +4,8 @@ let
     NETDATA_PASSWORD= "netdata_password";           # Password for Netdata
     # DOMAIN_NAME = "your_domain_name.com";         # Domain Name (Uncomment when available)
     EMAIL_ADDRESS = "your_email@example.com";       # Email for ACME
+
+    pythonEnv = pkgs.python3.withPackages (ps: with ps; [ pip ]);
 in
 {
     imports = [
@@ -97,6 +99,8 @@ in
     environment.systemPackages = with pkgs; [
         apacheHttpd
         screen
+        nodePackages.npm
+        pythonEnv
     ];
 
     # Enabled programs.
@@ -165,6 +169,13 @@ in
             local  all        all     trust
             host   all        all     127.0.0.1/32   trust
         '';
+    };
+
+    # Environment aliases.
+    environment.shellAliases = {
+        cls="clear";
+        srun="cd /proud/app && python manage.py makemigrations && python manage.py migrate && python manage.py runserver";
+        drun="cd /proud/app/static/proud && npm run dev";
     };
 
     # Enable flake support.
