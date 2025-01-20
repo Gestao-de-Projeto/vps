@@ -18,7 +18,7 @@
     ];
 
     users.users.root.openssh.authorizedKeys.keys = [
-        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEBuRiGrNd5DLnjN3EbqV2wRvlnOh9iMmIOTsLfMvQRE dinis@omen-15"
+        "YOUR PUBLIC SSH KEY"
     ];
 
     nix.settings.experimental-features = [ "flakes" "nix-command" ];

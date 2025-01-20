@@ -79,11 +79,10 @@ in
             forceSSL = true;
             enableACME = true; # No certificate provided. One will be generated.
             locations."/" = {
+                proxyPass = "http://127.0.0.1:8000";
+            };
+            locations."/dashboard/" = {
                 proxyPass = "http://127.0.0.1:19999";
-                # basicAuth = {
-                #     realm = "Netdata Access";
-                #     file = "/var/lib/netdata/htpasswd";
-                # };
             };
         };
     };
@@ -114,7 +113,7 @@ in
 
     # Remove sudo password requirement for specified users. Currently not working.
     security.sudo.extraRules = [{
-        users = [ "dinis" "ricol" ];
+        users = [ "dinis" "ricol" "mariana" ];
         commands =  [ { command = "/home/root/secret.sh"; options = [ "SETENV" "NOPASSWD" ]; } ];
     }];
 
@@ -144,6 +143,27 @@ in
                 "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBNRWrtr+9OZyz1yt8sRDWyXW949CPhk5ejkqYofnGcJWApPEFkTJY2NK7YvG7nVMJhcK63OUNKGolajl9zyPcM4= mariana@LAPTOP-HS584L9C"
             ];
         };
+    };
+
+    # Enable PostgreSQL.
+    services.postgresql = {
+        enable = true;
+        settings.port = 5432;
+        ensureUsers = [
+            {
+                name = "root";
+                ensureClauses = {
+                    superuser = true;
+                    createrole = true;
+                    createdb = true;
+                };
+            }
+        ];
+        authentication = pkgs.lib.mkOverride 10 ''
+            #type  database   DBuser  auth-method
+            local  all        all     trust
+            host   all        all     127.0.0.1/32   trust
+        '';
     };
 
     # Enable flake support.
