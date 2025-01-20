@@ -82,6 +82,11 @@ in
             enableACME = true; # No certificate provided. One will be generated.
             locations."/" = {
                 proxyPass = "http://127.0.0.1:8000";
+                proxyWebsockets = true;
+            };
+            locations."/ws" = {
+                proxyPass = "http://127.0.0.1:5173";
+                proxyWebsockets = true;
             };
             locations."/dashboard/" = {
                 proxyPass = "http://127.0.0.1:19999";
@@ -174,8 +179,6 @@ in
     # Environment aliases.
     environment.shellAliases = {
         cls="clear";
-        srun="cd /proud/app && python manage.py makemigrations && python manage.py migrate && python manage.py runserver";
-        drun="cd /proud/app/static/proud && npm run dev";
     };
 
     # Enable flake support.
