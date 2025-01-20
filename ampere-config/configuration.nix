@@ -96,6 +96,7 @@ in
     # System packages.
     environment.systemPackages = with pkgs; [
         apacheHttpd
+        screen
     ];
 
     # Enabled programs.
