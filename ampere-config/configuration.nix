@@ -16,6 +16,7 @@ in
     # Allow unfree packages.
     nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
         "netdata"
+        "postman"
     ];
 
     # Bootloader.
@@ -101,6 +102,7 @@ in
         screen
         nodePackages.npm
         pythonEnv
+        postman
     ];
 
     # Enabled programs.
